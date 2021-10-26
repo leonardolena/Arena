@@ -9,29 +9,29 @@ namespace Arena.Models
 {
     public class AppDbContext: DbContext
     {
-        
-        
-        public AppDbContext(DbContextOptions options) : base(options) { }
-        public DbSet<Happening> Happenings{get;set;}
-        public DbSet<GladiatorEntity> Gladiators{get;set;}
-        public Task<int> Request(GladiatorEntity ge) {
-            if (Gladiators.Find(ge.Id) == null) Gladiators.Add(ge);
-            return SaveChangesAsync();
+        public AppDbContext(DbContextOptions options) : base(options) {
         }
-        public async Task<int> Request(IEnumerable<Happening> hh) {
-            await Happenings.AddRangeAsync(hh);
-            return await SaveChangesAsync();
+        public DbSet<Happening> Happenings { get; set; }
+        public DbSet<FighterEntity> Gladiators { get; set; }
+        public async void Request(FighterEntity ge) {
+            if (Gladiators.Find(ge.Id) == null) {
+                Gladiators.Add(ge);
+                await SaveChangesAsync();
+            }
         }
-        public Task<int> Delete(GladiatorEntity ge) {
+        public async void Request(Happening h) {
+            await Happenings.AddAsync(h);
+            await SaveChangesAsync();
+        }
+        public async void Delete (FighterEntity ge) {
             Gladiators.Remove(ge);
-            return SaveChangesAsync();
+            await SaveChangesAsync();
         }
-        public List<GladiatorEntity> GetList() {
+        public List<FighterEntity> GetList() {
             return Gladiators.ToList();
         }
         public Task<List<Happening>> GetList(int n) {
             return Happenings.OrderBy(h => h.Time).TakeLast(n).ToListAsync();
         }
     }
-
 }

@@ -9,105 +9,78 @@ using System.Threading.Tasks;
 
 namespace Arena.Utils
 {
-    static class GladiatorConverter {
-
-        public static Queue<Happening> Chronicles;
-
-        private static readonly Dictionary<string, Gladiator> _ctors = new() {
-            { "Hoplomachus", new Hoplomachus() },
-            { "Secutor", new Secutor() },
-            { "Mirmillo", new Mirmillo() },
-            { "Retiarius", new Retiarius() },
-            { "Thraex", new Thraex() },
+    static class FighterConverter
+    {
+        private static readonly Dictionary<string, Fighter> _ctors = new() {
+            { "Knight", new Knight() },
+            { "Assassin", new Assassin() },
+            { "Mage", new Mage() },
+            { "Orc", new Orc() },
+            { "Warrior", new Warrior() },
         };
 
-        public static void Validate(GladiatorEntity ge) {
-            if (string.IsNullOrEmpty(ge.Name)) { throw new SubmitException() ; }
+        public static void Validate(FighterDTO ge) {
+            if (string.IsNullOrEmpty(ge.Name)) { 
+                throw new SubmitException();
+            }
             ge.Type = ge.Type[0..1].ToUpper() + ge.Type[1..].ToLower();
-            if(!_ctors.ContainsKey(ge.Type))throw new SubmitException();                      
+            if(!_ctors.ContainsKey(ge.Type)) {
+                throw new SubmitException();
+            }                     
         }
 
-        private static Gladiator Convert(GladiatorEntity obj) {
-            Gladiator g = _ctors.GetValueOrDefault(obj.Type);
+        public static FighterEntity Convert(FighterDTO dto) {
+            var fe = new FighterEntity 
+            {
+                Name = dto.Name,
+                Type = dto.Type,
+            };
+            if(dto.Strength > 50 && dto.Strength < 150) {
+                fe.Strength = dto.Strength;
+            } else {
+                fe.Strength = 100;
+            }
+            return fe;
+        }
+        
+        private static Fighter Convert(FighterEntity obj) {
+            Fighter g = _ctors.GetValueOrDefault(obj.Type);
             g.Name = obj.Name;
-            g.Id = obj.Id;
+            g.Health *= obj.Strength/100;
+            g.Strength= obj.Strength;
             return g;
         }
 
-        public static Gladiator GetGladiator() {
+        public static Fighter GetGladiator() {
             var r = new Random().Next(6);
             var g = _ctors.Values.ToArray()[r];
             g.Name = Guid.NewGuid().ToString();
             return g;
         }
 
-        public static GladiatorEntity Convert(Gladiator g) {
-            return new GladiatorEntity
+        public static FighterEntity Convert(Fighter g) {
+            return new FighterEntity
             {
                 Name = g.Name,
                 Type = g.GetType().ToString().Split('.').Last(),
             };        
         }
 
-        public static List<Gladiator> Recover(IEnumerable<GladiatorEntity> gladiators) {
-            var list = new List<Gladiator>();
+        public static List<Fighter> Recover(IEnumerable<FighterEntity> gladiators) {
+            var list = new List<Fighter>();
             foreach(var g in gladiators) {
                 list.Add(Convert(g));
             }
             return list;
         }
         
-        public static void RaiseAttack(Gladiator bearer,Gladiator triggerer,int damage) {
-            var h = new Happening
-            {
-                Time = System.Diagnostics.Stopwatch.GetTimestamp(),
-                Event = "Attack",
-                TriggererGladiator = $"{triggerer.GetType().ToString().Split('.').Last()}, {triggerer.Name}",
-                BearerGladiator = $"{bearer.GetType().ToString().Split('.').Last()}, {bearer.Name}",
-                DamageInflicted = damage,
-            };
-            
-            Chronicles.Enqueue(h);
-        }
-
-
-        public static void RaiseWin(Gladiator g) {
-            var h = new Happening
-            {
-                Event = "Win",
-                Time = System.Diagnostics.Stopwatch.GetTimestamp(),
-                BearerGladiator = $"{g.GetType().ToString().Split('.').Last()},{g.Name}",
-            };
-            Chronicles.Enqueue(h);
-        }
-        public static void RaiseDeath(Gladiator g) {
-            var h = new Happening
-            {
-                Event = "Death",
-                Time = System.Diagnostics.Stopwatch.GetTimestamp(),
-                BearerGladiator = $"{g.GetType().ToString().Split('.').Last()},{g.Name}",
-            };
-            Chronicles.Enqueue(h);
-        }
-        public static void RaiseStop() {
-            var h = new Happening 
-            {
-                Event = "Stop", 
-                Time = System.Diagnostics.Stopwatch.GetTimestamp() 
-            };
-            Chronicles.Enqueue(h);
-        }
-
-        public static bool Check(GladiatorEntity x, List<KeyValuePair<string, string>> ge) {
-            var keys = ge.Select(k => k.Key).ToArray();
-            bool r = false;
-            var c = x.GetType().GetProperties().Select(pi => pi.Name).Where(n => keys.Contains(n));
-            foreach (var s in c) {
-                r |= x.GetType().GetProperty(s).GetValue(x, null).ToString() == ge.Single(v => v.Key == s).Value;
-            }
+        public static bool Check(FighterEntity x, FighterDTO qe) {
+            bool r = false;       
+            r |= x.Id == qe.Id;    
+            r |= x.Name == qe.Name;
+            r |= x.Type == qe.Type;      
+            r |= x.Strength == x.Strength;      
             return r;
-
         }
     }
 }
-

@@ -14,15 +14,15 @@ namespace ArenaApplication
 
         private bool GladiatorRequest => _queue.Count > 0;
         public bool HasStarted;
-        public bool IsStopped;
+        public volatile bool IsStopped;
         public bool UserAction;
-        private Queue<Gladiator> _queue;
+        private Queue<Fighter> _queue;
         public void Stop() {
             UserAction=true;
             IsStopped = true;
             _queue.Clear();
         }
-        public void Request(Gladiator g) {
+        public void Request(Fighter g) {
             _queue.Enqueue(g);
         }
 
@@ -30,10 +30,10 @@ namespace ArenaApplication
             _queue.Clear();
             HasStarted = false;
         }
-        public void Recover(List<Gladiator> gladiators) {
+        public void Recover(List<Fighter> gladiators) {
             foreach (var g in gladiators) _queue.Enqueue(g);
         }
-        public List<Gladiator> GetQueue() {
+        public List<Fighter> GetQueue() {
             return _queue.ToList();
         }
 
@@ -46,29 +46,33 @@ namespace ArenaApplication
                 Thread.Sleep(1000);
                 Fight(gl1, gl2);
                 if (gl1.HasDied) { 
-                    GladiatorConverter.RaiseDeath(gl1);
+                    HappeningManager.RaiseDeath(gl1);
                     gl1 = Exchange(); 
                 }
                 Thread.Sleep(1000);
                 Fight(gl2, gl1);
                 if (gl2.HasDied) { 
-                    GladiatorConverter.RaiseDeath(gl2);
+                    HappeningManager.RaiseDeath(gl2);
                     gl2 = Exchange();
                 }
             }
         }
 
-        private Gladiator Exchange() {
-            Gladiator gl1;
-            if (GladiatorRequest) gl1 = _queue.Dequeue();
-            else gl1 = GladiatorConverter.GetGladiator();
+        private Fighter Exchange() {
+            Fighter gl1;
+            if (GladiatorRequest) {
+                gl1 = _queue.Dequeue();
+            }
+            else {
+                gl1 = FighterConverter.GetGladiator();
+            }
             return gl1;
         }
-        private static void Fight(Gladiator g1, Gladiator g2) {
+        private static void Fight(Fighter g1, Fighter g2) {
             var att = g2.Attack();
             if (att > 0) {
                 g1.Health -= att;
-                GladiatorConverter.RaiseAttack(g1, g2,att);
+                HappeningManager.RaiseAttack(g1, g2, att);
             }
         }
 
