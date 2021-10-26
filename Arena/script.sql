@@ -9,7 +9,7 @@ CREATE TABLE 'Happenings'
 (
     'Time' NUMERIC PRIMARY KEY,
     'Event' VARCHAR not null,
-    'BearerGladiatorId' int,
+    'BearerGladiator' text,
     'RemainingHp' int,
-    'TriggererGladiatorId' int,
+    'TriggererGladiator' text,
 );

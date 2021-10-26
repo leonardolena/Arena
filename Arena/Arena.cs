@@ -65,8 +65,11 @@ namespace ArenaApplication
             return gl1;
         }
         private static void Fight(Gladiator g1, Gladiator g2) {
-            g1.Health -= g2.Attack();
-            GladiatorConverter.RaiseAttack(g1,g2);
+            var att = g2.Attack();
+            if (att > 0) {
+                g1.Health -= att;
+                GladiatorConverter.RaiseAttack(g1, g2,att);
+            }
         }
 
     }

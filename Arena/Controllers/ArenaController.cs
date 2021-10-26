@@ -34,19 +34,19 @@ namespace ArenaApplication.Controllers
         }
 
         [HttpGet] 
-        public async Task<List<Happening>> LastEvents([FromHeader] int n=0) {
+        public async Task<List<string>> LastEvents([FromHeader] int n=0) {
             await _db.Request(GladiatorConverter.Chronicles);
             GladiatorConverter.Chronicles = null;
-            if (n > 0) return await _db.GetList(n);
-            else throw new QueryException();
+            if (n > 0) { 
+                var list = await _db.GetList(n);
+                return list.Select(h => h.ToString()).ToList();
+            } else throw new QueryException();
         }
         [HttpGet]
         public List<GladiatorEntity> AliveGladiators() {
-            var last= GladiatorConverter.Chronicles.Last(e => e.Event == "Attack").TriggererGladiatorId;
-            GladiatorConverter.Chronicles = null;
-            var entity = _db.Gladiators.Single(g => g.Id == last);
+            var last= GladiatorConverter.Chronicles.Last(e => e.Event == "Attack").TriggererGladiator.Split(',');
             var list= _arena.GetQueue().Select(g => GladiatorConverter.Convert(g)).ToList();
-            list.Add(entity);
+            list.Add(new GladiatorEntity { Type = last[0], Name  = last[1],}) ;
             return list;
         }
 

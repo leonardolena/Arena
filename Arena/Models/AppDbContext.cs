@@ -32,27 +32,6 @@ namespace Arena.Models
         public Task<List<Happening>> GetList(int n) {
             return Happenings.OrderBy(h => h.Time).TakeLast(n).ToListAsync();
         }
-        
-
-    }
-
-    public class GladiatorEntity
-    {
-        public int Id { get; set; }
-        public string Type { get; internal set; }
-        public string Name { get; internal set; }
-    }
-
-    public class Happening
-    {
-        public long Time { get; set; } 
-        public string Event { get; set; }
-        public int BearerGladiatorId { get; set; }
-        public int RemainingHp { get; set; }
-        public int TriggererGladiatorId { get; set; }
-
-
-
     }
 
 }

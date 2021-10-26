@@ -1,4 +1,5 @@
 using Arena.Models;
+using Arena.Utils;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -24,6 +25,7 @@ namespace ArenaApplication
         }
 
         public IConfiguration Configuration { get; }
+        public ILogger Logger { get; }
                 
         public void ConfigureServices(IServiceCollection services) {
             services.AddControllers();
@@ -35,8 +37,18 @@ namespace ArenaApplication
         }
        
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env) {
-            
-            app.UseExceptionHandler();        
+
+            app.Use(async (ctx, next) => {
+                try {
+                    await next();
+                }catch (QueryException qe) {
+                    Logger.LogInformation(qe, "Invalid Argument");
+                    ctx.Response.StatusCode =404;
+                }catch (SubmitException se) {
+                    Logger.LogInformation(se, "Invalid Object");
+                    ctx.Response.StatusCode = 422;
+                }
+                });    
             app.UseRouting();
             app.UseAuthentication();
             app.UseAuthorization();

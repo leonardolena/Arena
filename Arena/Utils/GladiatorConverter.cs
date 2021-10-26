@@ -57,14 +57,14 @@ namespace Arena.Utils
             return list;
         }
         
-        public static void RaiseAttack(Gladiator bearer,Gladiator triggerer) {
+        public static void RaiseAttack(Gladiator bearer,Gladiator triggerer,int damage) {
             var h = new Happening
             {
                 Time = System.Diagnostics.Stopwatch.GetTimestamp(),
                 Event = "Attack",
-                TriggererGladiatorId = triggerer.Id,
-                BearerGladiatorId = bearer.Id,
-                RemainingHp = bearer.Health,
+                TriggererGladiator = $"{triggerer.GetType().ToString().Split('.').Last()}, {triggerer.Name}",
+                BearerGladiator = $"{bearer.GetType().ToString().Split('.').Last()}, {bearer.Name}",
+                DamageInflicted = damage,
             };
             
             Chronicles.Enqueue(h);
@@ -76,7 +76,7 @@ namespace Arena.Utils
             {
                 Event = "Win",
                 Time = System.Diagnostics.Stopwatch.GetTimestamp(),
-                BearerGladiatorId = g.Id,
+                BearerGladiator = $"{g.GetType().ToString().Split('.').Last()},{g.Name}",
             };
             Chronicles.Enqueue(h);
         }
@@ -85,7 +85,7 @@ namespace Arena.Utils
             {
                 Event = "Death",
                 Time = System.Diagnostics.Stopwatch.GetTimestamp(),
-                BearerGladiatorId = g.Id,
+                BearerGladiator = $"{g.GetType().ToString().Split('.').Last()},{g.Name}",
             };
             Chronicles.Enqueue(h);
         }
